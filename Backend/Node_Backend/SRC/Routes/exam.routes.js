@@ -55,15 +55,6 @@ examRouter.get(
    getExamById
 );
 
-/* GET EXAMS BY SEMESTER */
-
-examRouter.get(
-   "/semester/:semester",
-   verifyAuth,
-   getExamsBySemester
-);
-
-/* GET EXAMS BY SUBJECT */
 
 examRouter.get(
    "/subject/:subjectId",

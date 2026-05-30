@@ -300,47 +300,6 @@ export const deleteExam = async (
    }
 };
 
-/* GET EXAMS BY SEMESTER */
-
-export const getExamsBySemester =
-async (
-   req,
-   res
-) => {
-
-   try {
-
-      const { semester } =
-         req.params;
-
-      const exams =
-         await Exam.find({
-            semester
-         })
-            .populate("subjectId")
-            .populate("invigilatorId");
-
-      return res.status(200).json({
-
-         success: true,
-
-         exams
-      });
-
-   } catch (error) {
-
-      return res.status(500).json({
-
-         success: false,
-
-         message:
-            "Internal Server Error",
-
-         error: error.message
-      });
-   }
-};
-
 /* GET EXAMS BY SUBJECT */
 
 export const getExamsBySubject =

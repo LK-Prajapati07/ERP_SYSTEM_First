@@ -44,86 +44,104 @@ import aiAnalytics from "@/assets/image7.webp";
 
 import aiLearning from "@/assets/image8.webp";
 import { Spinner } from "@/components/ui/spinner";
+import { useDispatch } from "react-redux";
+import { setLoading } from "@/store/authSlice";
 
 const Login = () => {
-  const { register, handleSubmit } =
-    useForm();
+  const { register, handleSubmit } = useForm();
+  const dispatch = useDispatch();
 
-  const { mutateAsync, isPending } =
-    useLoginHook();
+  const { mutateAsync, isPending } = useLoginHook();
 
   const nav = useNavigate();
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   /* LOGIN FUNCTION */
   const submitData = async (data) => {
     try {
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          data.email,
-          data.password
-        );
-
-      // if (
-      //   !userCredential.user.emailVerified
-      // ) {
-      //   await signOut(auth);
-
-      //   toast.warning(
-      //     "Please verify your email ✨"
-      //   );
-
-      //   return;
-      // }
-
-      const idToken =
-        await userCredential.user.getIdToken();
-        console.log(idToken)
-
-       mutateAsync({ idToken });
-
-      toast.success(
-        "Login successful 🚀"
+      dispatch(setLoading());
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
       );
 
-      nav("/home");
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth);
+
+        toast.warning("Please verify your email ✨");
+
+        return;
+      }
+
+      const idToken = await userCredential.user.getIdToken();
+      console.log(idToken);
+
+      const res = mutateAsync({ idToken });
+      dispatch(
+        setUser({
+          user: res.user,
+          role: res.role,
+        }),
+      );
+
+      toast.success("Login successful 🚀");
+      switch (res.role) {
+        case "Admin":
+          nav("/Admin/dashboar");
+          break;
+        case "Teacher":
+          nav("/Teacher/dashboard");
+          break;
+        case "Student":
+          nav("/Student/dashboard");
+          break;
+        default:
+          nav("/");
+      }
     } catch (error) {
       toast.error(error.message);
     }
   };
 
   /* GOOGLE LOGIN */
-  const handleGoogleSignIn =
-    async () => {
-      try {
-        const result =
-          await signInWithPopup(
-            auth,
-            googleProvider
-          );
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
 
-        const idToken =
-          await result.user.getIdToken();
-          console.log('idToken')
+      const idToken = await result.user.getIdToken();
+      console.log("idToken");
 
-        mutateAsync({ idToken });
+      const res = mutateAsync({ idToken });
+      dispatch(
+        setUser({
+          user: res.user,
+          role: res.role,
+        }),
+      );
 
-        toast.success(
-          "Google Login Success 🎉"
-        );
-
-        nav("/home");
-      } catch (error) {
-        toast.error(error.message);
+      toast.success("Google Login Success 🎉");
+      switch (res.role) {
+        case "Admin":
+          nav("/Admin/dashboar");
+          break;
+        case "Teacher":
+          nav("/Teacher/dashboard");
+          break;
+        case "Student":
+          nav("/Student/dashboard");
+          break;
+        default:
+          nav("/");
       }
-    };
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
-      
       {/* HERO IMAGE */}
       <div className="absolute inset-0">
         <img
@@ -199,7 +217,6 @@ const Login = () => {
 
       {/* LEFT PANELS */}
       <div className="hidden 2xl:flex absolute left-10 top-1/2 -translate-y-1/2 flex-col gap-6 z-20">
-        
         {/* SMART CAMPUS */}
         <FloatingCard
           image={campus}
@@ -222,7 +239,6 @@ const Login = () => {
 
       {/* RIGHT PANELS */}
       <div className="hidden 2xl:flex absolute right-10 top-1/2 -translate-y-1/2 flex-col gap-6 z-20">
-        
         {/* ROBOTICS */}
         <FloatingCard
           image={robotics}
@@ -245,7 +261,6 @@ const Login = () => {
 
       {/* LOGIN CARD */}
       <div className="relative z-40 flex items-center justify-center min-h-screen px-4">
-        
         <motion.div
           initial={{
             opacity: 0,
@@ -314,10 +329,7 @@ const Login = () => {
                 shadow-[0_0_40px_rgba(34,211,238,0.4)]
               "
               >
-                <GraduationCap
-                  size={36}
-                  className="text-white"
-                />
+                <GraduationCap size={36} className="text-white" />
               </motion.div>
 
               {/* TITLE */}
@@ -338,8 +350,7 @@ const Login = () => {
               </h1>
 
               <p className="text-gray-400 mt-3 text-sm">
-                Access futuristic AI ERP
-                ecosystem
+                Access futuristic AI ERP ecosystem
               </p>
 
               <div className="flex items-center justify-center gap-3 mt-4 text-xs text-cyan-300">
@@ -357,9 +368,7 @@ const Login = () => {
 
             {/* FORM */}
             <form
-              onSubmit={handleSubmit(
-                submitData
-              )}
+              onSubmit={handleSubmit(submitData)}
               className="mt-8 space-y-5"
             >
               {/* EMAIL */}
@@ -401,11 +410,7 @@ const Login = () => {
                 />
 
                 <input
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   {...register("password")}
                   className="
@@ -429,18 +434,10 @@ const Login = () => {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword(
-                      !showPassword
-                    )
-                  }
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
                 >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
@@ -480,9 +477,7 @@ const Login = () => {
               "
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {isPending
-                    ? <Spinner/>
-                    : "Login Now"}
+                  {isPending ? <Spinner /> : "Login Now"}
 
                   <ArrowRight size={18} />
                 </span>
@@ -492,9 +487,7 @@ const Login = () => {
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/10" />
 
-                <span className="text-xs text-gray-500">
-                  OR CONTINUE WITH
-                </span>
+                <span className="text-xs text-gray-500">OR CONTINUE WITH</span>
 
                 <div className="flex-1 h-px bg-white/10" />
               </div>
@@ -508,9 +501,7 @@ const Login = () => {
                   scale: 0.96,
                 }}
                 type="button"
-                onClick={
-                  handleGoogleSignIn
-                }
+                onClick={handleGoogleSignIn}
                 className="
                 w-full
                 h-14
@@ -529,17 +520,13 @@ const Login = () => {
                   alt="google"
                   className="w-5 h-5"
                 />
-
                 Continue with Google
               </motion.button>
 
               {/* FOOTER */}
               <p className="text-center text-gray-400 text-sm">
                 Don&apos;t have an account?{" "}
-                <Link
-                  to="/register"
-                  className="text-cyan-400 font-semibold"
-                >
+                <Link to="/register" className="text-cyan-400 font-semibold">
                   Register
                 </Link>
               </p>
@@ -567,12 +554,7 @@ const Login = () => {
       "
       >
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-          
-          <FooterItem
-            icon={<GraduationCap />}
-            title="25+"
-            subtitle="Courses"
-          />
+          <FooterItem icon={<GraduationCap />} title="25+" subtitle="Courses" />
 
           <FooterItem
             icon={<ShieldCheck />}
@@ -580,23 +562,11 @@ const Login = () => {
             subtitle="Students"
           />
 
-          <FooterItem
-            icon={<Cpu />}
-            title="450+"
-            subtitle="Teachers"
-          />
+          <FooterItem icon={<Cpu />} title="450+" subtitle="Teachers" />
 
-          <FooterItem
-            icon={<Bot />}
-            title="1,200+"
-            subtitle="Projects"
-          />
+          <FooterItem icon={<Bot />} title="1,200+" subtitle="Projects" />
 
-          <FooterItem
-            icon={<Trophy />}
-            title="98%"
-            subtitle="Success Rate"
-          />
+          <FooterItem icon={<Trophy />} title="98%" subtitle="Success Rate" />
         </div>
       </footer>
     </div>
@@ -604,20 +574,11 @@ const Login = () => {
 };
 
 /* FLOATING CARD */
-const FloatingCard = ({
-  image,
-  icon,
-  title,
-  subtitle,
-  glow,
-  reverse,
-}) => {
+const FloatingCard = ({ image, icon, title, subtitle, glow, reverse }) => {
   return (
     <motion.div
       animate={{
-        y: reverse
-          ? [10, -10, 10]
-          : [-10, 10, -10],
+        y: reverse ? [10, -10, 10] : [-10, 10, -10],
       }}
       transition={{
         repeat: Infinity,
@@ -625,27 +586,18 @@ const FloatingCard = ({
       }}
       className={`
       relative
-      ${
-        reverse ? "ml-12" : ""
-      }
+      ${reverse ? "ml-12" : ""}
       w-85
       h-57.5
       rounded-4xl
       overflow-hidden
       border
-      ${
-        glow === "cyan"
-          ? "border-cyan-500/20"
-          : "border-purple-500/20"
-      }
+      ${glow === "cyan" ? "border-cyan-500/20" : "border-purple-500/20"}
       bg-black/40
       backdrop-blur-2xl
     `}
     >
-      <img
-        src={image}
-        className="w-full h-full object-cover"
-      />
+      <img src={image} className="w-full h-full object-cover" />
 
       <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent" />
 
@@ -660,24 +612,19 @@ const FloatingCard = ({
           justify-center
           backdrop-blur-xl
           border
-          ${
-            glow === "cyan"
+          ${glow === "cyan"
               ? "bg-cyan-500/20 border-cyan-400/20 text-cyan-300"
               : "bg-purple-500/20 border-purple-400/20 text-purple-300"
-          }
+            }
         `}
         >
           {icon}
         </div>
 
         <div>
-          <h3 className="text-white font-bold text-lg">
-            {title}
-          </h3>
+          <h3 className="text-white font-bold text-lg">{title}</h3>
 
-          <p className="text-sm text-gray-300">
-            {subtitle}
-          </p>
+          <p className="text-sm text-gray-300">{subtitle}</p>
         </div>
       </div>
     </motion.div>
@@ -685,11 +632,7 @@ const FloatingCard = ({
 };
 
 /* FOOTER ITEM */
-const FooterItem = ({
-  icon,
-  title,
-  subtitle,
-}) => {
+const FooterItem = ({ icon, title, subtitle }) => {
   return (
     <motion.div
       whileHover={{
@@ -717,13 +660,9 @@ const FooterItem = ({
       </div>
 
       <div>
-        <h2 className="text-2xl font-black">
-          {title}
-        </h2>
+        <h2 className="text-2xl font-black">{title}</h2>
 
-        <p className="text-sm text-gray-400">
-          {subtitle}
-        </p>
+        <p className="text-sm text-gray-400">{subtitle}</p>
       </div>
     </motion.div>
   );

@@ -43,7 +43,7 @@ app.use('/api/notes',notesRouter)
 app.use('/api/examSchedule',examScheduleRouter)
 app.use('/api/ai',aiRouter)
 
-app.use('/api/exam',examRouter)
+app.use('/api/exam',examRouter) 
 app.use('/api/dashboard',dashboardRouter)
 app.use('/api/cheating',cheatingRouter)
 app.use('/api/attendence',attendanceRouter)

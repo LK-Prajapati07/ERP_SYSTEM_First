@@ -9,6 +9,7 @@ import{createStudent,deleteStudent,getAllStudent,getStudentAttendance,getStudent
 import { verifyAuth } from "../middleware/auth.middleware.js";
 
 const studentRouter = express.Router();
+
 studentRouter.post(
    "/",
    verifyAuth,

@@ -46,11 +46,12 @@ import aiAnalytics from "@/assets/image7.webp";
 
 import aiLearning from "@/assets/image8.webp";
 import { useLoginHook } from "@/Hook/login.hook";
+import { useDispatch } from "react-redux";
 
 const Register = () => {
   const { register, handleSubmit } =
     useForm();
-
+  const dispatch = useDispatch();
   const nav = useNavigate();
   const { mutateAsync, isPending } = useLoginHook()
   const [showPassword, setShowPassword] =
@@ -62,54 +63,36 @@ const Register = () => {
   /* REGISTER FUNCTION */
   const submitData = async (data) => {
     try {
+      dispatch(setLoading());
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
+      );
 
-      setLoading(true);
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth);
 
-      const result =
-        await createUserWithEmailAndPassword(
-          auth,
-          data.email,
-          data.password
-        );
+        toast.warning("Please verify your email ✨");
 
-      const user = result.user;
+        return;
+      }
 
-      await updateProfile(user, {
-        displayName: data.name,
-      });
+      const idToken = await userCredential.user.getIdToken();
+      console.log(idToken);
 
-      await user.reload();
+      const res = mutateAsync({ idToken });
+      dispatch(
+        setUser({
+          user: res.user,
+          role: res.role,
+        }),
+      );
 
-      const idToken =
-        await user.getIdToken(true);
-
-      // await sendEmailVerification(
-      //   user
-      // );
-
-       mutateAsync({
-        idToken,
-        gender: data.gender,
-        phoneNumber:
-          data.phoneNumber,
-      });
-
-      await signOut(auth);
-
-      // toast.success(
-      //   "Verification email sent 🚀"
-      // );
-
+      toast.success("Login successful 🚀");
       nav("/");
-
     } catch (error) {
-
       toast.error(error.message);
-
-    } finally {
-
-      setLoading(false);
-
     }
   };
 
