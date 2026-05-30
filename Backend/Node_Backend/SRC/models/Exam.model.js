@@ -1,0 +1,55 @@
+import mongoose from "mongoose";
+
+const ExamSchema=new mongoose.Schema({
+    examName:{
+        type:String,
+        required:true
+    },
+    subjectId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Subject',
+        required:true
+    },
+    examType:{
+        type:String,
+        enum:['Lab','Theory','Mid'],
+        required:true
+    },
+    semester:{
+        type:Number,
+        required:true,
+    },
+    date:{
+        type:Date,
+        required:true
+    },
+    startTime:{
+        type:Date,
+        required:true
+    },
+    endTime:{
+        type:Date,
+        required:true
+    },
+    examHall:{
+        type:String,
+        required:true
+    },
+    invigilatorId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Teacher',
+        required:true
+    },
+    instructions:{
+        type:String,
+        required:true
+    },
+    totalMarks:{
+        type:Number,
+        min:0,
+        required:true}
+},
+{
+    timestamps:true
+})
+export const Exam=mongoose.model('Exam',ExamSchema)
